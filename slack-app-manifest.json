@@ -36,7 +36,7 @@
     },
     "settings": {
         "event_subscriptions": {
-            "request_url": "<YOUR NGROK URL>/slack/events",
+            "request_url": "https://cc48-221-149-175-1.ngrok-free.app/slack/events",
             "bot_events": [
                 "assistant_thread_started",
                 "message.im"
@@ -44,7 +44,7 @@
         },
         "interactivity": {
             "is_enabled": true,
-            "request_url": "<YOUR NGROK URL>/slack/events"
+            "request_url": "https://cc48-221-149-175-1.ngrok-free.app/slack/events"
         },
         "org_deploy_enabled": false,
         "socket_mode_enabled": false,

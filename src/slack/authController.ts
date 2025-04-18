@@ -27,6 +27,10 @@ export const authCallback = async (req: Request, res: Response, next: NextFuncti
         const userId = stateData.userId;
         const serverUrl = stateData.serverUrl;
 
+        console.log("UserId: ", userId);
+        console.log("ServerUrl: ", serverUrl);
+        console.log("AuthCode: ", authCode);
+
         if (!userId || !serverUrl) {
             return res.status(400).json({ error: "Wrong request" });
         }

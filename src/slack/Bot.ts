@@ -44,6 +44,7 @@ export class Bot {
         this._app.action("redirect", this._redirectAction);
 
         this._receiver.router.get("/auth/callback", authCallback as RequestHandler);
+        console.log("Starting slack bot on port " + (process.env.PORT || 3000));
         await this._app.start(process.env.PORT || 3000);
     }
 
@@ -104,8 +105,8 @@ export class Bot {
         chatCompletionMessages.push({
             role: "system",
             content: `
-            You are a helpful assistant. You've just used a tool and received results. Interpret these results for the user in a clear, helpful way. Please format your response as markdown.
-            Just give me your interpretation of the results, no extra text before.`,
+            - Always respond in English and Korean together.
+            `,
         });
         let toolCallResultsMessages = "I used the tools:\n";
         toolCallResultsMessages += toolRequests.map((toolCallRequest) => {
@@ -184,6 +185,7 @@ export class Bot {
             chatCompletionMessages.unshift(Bot._getSystemMessage()); // add the system message at the beginning of the conversation
 
             const llmResponse = await llmClient.getResponse(chatCompletionMessages, mcpSession.tools);
+            logger.info("LLM response received:", llmResponse);
 
             // Handle tool calls in llm response
             if (llmResponse?.tool_calls && llmResponse.tool_calls.length > 0) {
@@ -277,7 +279,8 @@ export class Bot {
             content: `
 #### CONTEXT
 Nous sommes le ${currentDateTime}.
-You are a friendly slack assistant that can help answer questions and help with tasks. 
+You are a friendly slack assistant that can help answer questions and help with tasks.
+If you need assistance, just ask! Answer in a language that is the same as the user.
       `,
         };
         return systemMessage;
