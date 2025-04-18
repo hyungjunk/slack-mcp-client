@@ -22,51 +22,21 @@ export type OpenAiTool = {
 
 class LlmClient {
     private _openaiModel: string;
-    private _ollamaModel: string;
-    private _useOllama: boolean;
+    private _ollamaModel: string | undefined;
 
     constructor() {
-        this._useOllama = true;
         this._openaiModel = getOrThrow("OPENAI_MODEL");
-        this._ollamaModel = process.env.OLLAMA_MODEL || "gemma3:1b";
-        this.configure({
-            useOllama: true,
-            ollamaModel: this._ollamaModel,
-            openaiModel: this._openaiModel
-        })
+        this._ollamaModel = process.env.OLLAMA_MODEL;
+        logger.info(`LLM configured: ${this._ollamaModel ? 'Ollama' : 'OpenAI'} with model ${this._ollamaModel ? this._ollamaModel : this._openaiModel}`);
     }
-
-    configure(config: {
-        useOllama?: boolean;
-        ollamaModel?: string;
-        openaiModel?: string;
-    }) {
-        if (config.useOllama !== undefined) {
-            this._useOllama = config.useOllama;
-        }
-        if (config.ollamaModel) {
-            this._ollamaModel = config.ollamaModel;
-        }
-        if (config.openaiModel) {
-            this._openaiModel = config.openaiModel;
-        }
-        
-        logger.info(`LLM configured: ${this._useOllama ? 'Ollama' : 'OpenAI'} with model ${this._useOllama ? this._ollamaModel : this._openaiModel}`);
-    }
-
 
     async getResponse(messages: ChatCompletionMessageParam[], tools: Tool[] = []) {
-        console.log(this);
-        if (this._useOllama) {
-            // Ollama doesn't support tools the same way as OpenAI
-            // Convert messages to Ollama format
+        if (this._ollamaModel) {
             const ollamaMessages = messages.map(msg => ({
                 role: msg.role,
                 content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
             }));
     
-            console.log('Messages prepared for Ollama:', ollamaMessages);
-            
             try {
                 const response = await ollama.chat({
                     model: this._ollamaModel,
@@ -78,12 +48,11 @@ class LlmClient {
                     // }
                 });
                 
-                console.log('Ollama response received:', response);
-                
                 logger.debug("Llm response: " + JSON.stringify(response.message));
                 return {
                     role: response.message.role,
-                    content: response.message.content
+                    content: response.message.content,
+                    tool_calls: [],
                 };
             } catch (error) {
                 console.error("Detailed Ollama error:", error);
